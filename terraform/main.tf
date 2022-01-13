@@ -17,6 +17,7 @@ module "vpc" {
   }
 }
 
+# sg
 resource "aws_security_group" "sg_bastion_host" {
   name        = "sg_bastion_host"
   description = "bastion host security group"
