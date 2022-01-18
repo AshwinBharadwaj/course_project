@@ -1,0 +1,31 @@
+---
+- hosts: jenkins
+  become: yes
+  user: ubuntu
+  
+  tasks:
+    - name: Update apt cache
+      apt: update_cache=yes cache_valid_time=3600
+    - name: ensure the jenkins apt repository key is installed
+      apt_key: url=https://pkg.jenkins.io/debian-stable/jenkins.io.key state=present
+    - name: ensure the repository is configured
+      apt_repository: repo='deb https://pkg.jenkins.io/debian-stable binary/' state=present      
+    
+    - name: Install Jenkins
+      apt:
+        name: "{{ packages }}"
+        state: present
+        update_cache: yes
+      vars:
+        packages:
+          - openjdk-11-jdk
+          - jenkins
+
+    - name:  Add jenkins user to docker group
+      shell: usermod -a -G docker jenkins
+
+    - name:  Add jenkins user to sudo group
+      shell: usermod -a -G sudo jenkins
+
+    - name:  Ensure jenkins is running
+      service: name=jenkins state=started
