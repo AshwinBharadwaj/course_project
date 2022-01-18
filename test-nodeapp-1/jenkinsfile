@@ -1,0 +1,30 @@
+pipeline {
+  agent any
+    
+  stages {
+        
+    stage('Checkout code') {
+        steps {
+            checkout scm
+        }
+	}
+     
+    stage('ECR Login and push') {
+        steps {
+		script {
+			docker.withRegistry("https://417139048224.dkr.ecr.us-east-1.amazonaws.com/ashwin-bharadwaj-c4-p1", "ecr:us-east-1:aws_credentials") {
+  			def myImage = docker.build('ashwin-bharadwaj-c4-p1')
+			myImage.push()
+            }
+        }
+	}
+    }
+    stage('Deploy Application') {
+        steps {
+		sh 'scp -o StrictHostKeyChecking=no -i /home/ubuntu/key.pem ~/workspace/build-deploy-demo-web-app/deploy.sh ubuntu@10.0.1.231:~/'
+                sh 'ssh -o StrictHostKeyChecking=no -i /home/ubuntu/key.pem ubuntu@10.0.1.231 "chmod +x ~/deploy.sh"'
+                sh 'ssh -o StrictHostKeyChecking=no -i /home/ubuntu/key.pem ubuntu@10.0.1.231 "sudo ~/deploy.sh"'
+	}
+    }
+  }
+}
